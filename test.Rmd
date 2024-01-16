@@ -10,3 +10,4 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Testing Git connection from desktop; PUSH
+PUSH from desktop recieved, editing from GitHub... Test Pull
