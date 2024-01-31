@@ -1,0 +1,43 @@
+---
+title: "GG 606: Lecture Notes?"
+author: "Julia K"
+date: "2024-01-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+
+library(palmerpenguins)
+getwd()
+```
+
+*Body mass (x) vs. 
+Line of best fit: treated in alphabetical order is default behavior inside R.
+Numerically are not treated as a 1,2,3: means for similar variances amongst groups then 
+means given their variance is the mean here within its variance. Line of best fit?
+The slope here means fake units why LOBF fails here. Changing the units on the
+x-axis allows data to be better sprea default is model one linear regression and 
+all error is assumed in the y. 
+LOBF minimizing teh sum of the data away from the line amongt all data points. SST
+is being minimized. Error in measuring flipper length (dislike)... consider the 
+stairway for a model 2 regression instead. Do yo want up and down x/y axis or whether
+you want true distance from data points perpendicular to the axis (a+b=c) pizza slices. Model 1 regression vs. model 2 regression etc. what is it that you want to tell?
+
+Not the confidence in the slope of intercept, but 95% of predictions would fall within
+this CI. 
+
+```{r}
+
+```
+
+```{r}
+
+```
+

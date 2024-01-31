@@ -1,0 +1,157 @@
+---
+title: 'GG 606: Homework Weeks 1-2'
+author: "Author: Julia K"
+date: "Date: 2024-01-30"
+output: 
+  html_document:
+    keep_md: true
+    toc: true
+    toc_float: true
+    toc_depth: 4  
+  collapsed: no 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### **Loading Necessary Items**
+```{r WEEK TWO: (here)package, include=TRUE}
+library(tidyverse)
+library(janitor)
+library(broom)
+library(ggthemes)
+library(RColorBrewer)
+
+library(here)                        #set wd through project file (week 2 hw)
+library(palmerpenguins)
+#getwd() #loads rmarkdown folder, set through knit > project as directory 
+```
+
+```{r}
+source(here("functions", "theme_juicy.R")) #load from 'functions' folder
+theme_set(theme_juicy())                   #auto-apply as theme for plots
+```
+Did nothing about that warning that prints above.
+
+```{r WEEK ONE: INTRODUCTION + penguins, include=TRUE}
+penguins=penguins %>%         #created the dataset as a callable object
+  glimpse()
+```
+### **Manipulating the Dataset** 
+
+**What is it that we would want to know? What plot types can show us this?** \
+
+I would want to know if penguin body mass (M/F) among species varies depending 
+on the island that they're on (lots of different floating variables here).
+```{r WEEK ONE: INTRODUCTION + penguins; view data, include=TRUE}
+#Figure out how many different islands there are for each species (filter or tally)
+penguins %>%                         #did not create a new object in env. 
+dplyr::select (species, island) %>%  #create subset w/ only these two cols
+distinct(species, island) %>%        #create combination of species and island
+  group_by(species) %>%              #tally of islands (n) per species
+  count() %>%
+print()                              #three spp. only Adelie has three islands
+```
+ Can only plot Adelie body mass per island because it's the only species that has
+data from more than one island. But because I'm curious...  
+
+***Adelie:*** three islands (Biscoe, Dream, Torgersen) n (appears) = 44, 56, 52 \
+***Chinstrap:*** only one island (Dream) n= 68 \
+***Gentoo:*** only one island (Biscoe) n= 124 \
+
+**Don't know if M/F for any given n, nor the year**
+_______________________________________________________________________________
+
+Okay... *now* what do I wanna know? 
+
+Differences in body mass index of both male and females among islands. Is there 
+a correlation between body mass index and flipper length (i.e., if you're bigger
+do you have larger flippers)? Do these variables vary a lot throughout the years? \
+Would have to breakdown groupings by: i. Year ii. Island iii. Gender
+  
+```{r WEEK ONE: INTRODUCTION + penguins; manipulate data, include=TRUE}
+peng_adelie=penguins %>%                         #created adelie penguins subset 
+filter(species == "Adelie") %>%
+ na.omit() %>%                                  #this removes ALL rows with 1+ NA
+  mutate(body_mass_lbs=(body_mass_g / 453.6)) %>% #new col convert grams to lbs
+  #mutate(`sum`()) before brackets would put the total sum within the new col lol
+  mutate(across(c('body_mass_lbs'), round, 2)) %>% #round new col 2 decimal places
+
+# Want to add the total number of penguins measured per year:
+# mutate(
+# distinct(body_mass_lbs, flipper_length_mm, sex, year) #specific penguin
+# group_by(year)               
+# mutate(count()) %>%
+#  ) %>% 
+  print() 
+```
+
+Could not easily figure out how to add the `count()` summary function to the
+data table... so, manually computed them then will write in for figure... 
+*Whomp whomp :(*
+```{r}
+peng_adelie %>%
+distinct(body_mass_lbs, flipper_length_mm, sex, year) %>%   #specific penguin
+  group_by(year) %>%                   #tally of penguins (n) per year
+  count() %>%                         
+print()                                #these data counts check out (verified)       
+```
+
+Plot with manually positioned text labels:
+```{r}
+n_counts=data.frame (                 #create a subset dataframe of these values
+  label=c("n= 44", "n= 48", "n= 50"), #text you want to add
+  year  =c(2007, 2008, 2009),         #col name facet_wrapped by
+  x    =c(7, 7, 7),                   #exact position on the x-axis per grid
+  y    =c(207.5, 207.5, 207.5))       #exact position on the y-axis per grid            
+```
+
+
+### **Ploting the Data**
+```{r WEEK ONE: INTRODUCTION + penguins; plotting data, include=TRUE}
+peng_adelie_figure=peng_adelie %>%          #create figure as a callable object
+ggplot() + 
+  facet_wrap(vars(year), ncol=3) +               #create a grid w/ 3 columns 
+  geom_point(aes(x=body_mass_lbs, y=flipper_length_mm, colour=island, shape=sex), 
+  size=2) +
+  geom_smooth(aes(x=body_mass_lbs, y=flipper_length_mm, colour=island), method = "lm", se=FALSE) +
+  
+scale_colour_brewer(name= "Island", palette="YlOrRd") +  #ColorRBrewer package
+
+  
+labs(title="Adelie Penguin Survey Samples (2007-2009)") +
+  labs(x=expression(atop("Body Mass (lbs)")),  #not technically coding right?
+         y=expression("Flipper Length (mm)")) +
+
+theme(legend.position="top") +                    #select where the legend rests
+theme(legend.key.size=unit(0.35, 'cm')) +         #decrease legend size
+theme(legend.margin=margin(t=0.25, unit='cm')) +  #reduce legend margin
+
+geom_text(data=n_counts, 
+          mapping=aes(x=x, y=y, label=label), colour="white")#add n text to each plot
+          #don't have the skillset on how to generate background square for text rn
+  
+print(peng_adelie_figure)
+```
+
+Graph gives a... positive linear correlation? But linear regression stats do not
+return any significant values (?) \
+Data seems to show an overall increase in flipper length, while body mass remains 
+similar. 
+```{r}
+body_mass_x_flipper_length=peng_adelie %>%      #create new object from dataframe
+  group_by(year)                                #group analysis by year
+  do(body_mass_x_flipper_length,                #take new object
+     glance(                                    #look at the linear regression 
+       lm(flipper_length_mm ~ body_mass_lbs, data=.))) #target x predictor
+summary(body_mass_x_flipper_length)
+```
+
+
+### **Saving the Data**
+```{r WEEK ONE: INTRODUCTION + penguins; saving the data, include=TRUE}
+ggsave(here("figures", "adelie_penguin_plot.png"), peng_adelie_figure,
+       width = 190, height = 120, units = "mm")  
+```
+

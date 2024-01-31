@@ -1,0 +1,11 @@
+---
+title: 'GG 606: Homework Week 2'
+author: "Julia K"
+date: "2024-01-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
